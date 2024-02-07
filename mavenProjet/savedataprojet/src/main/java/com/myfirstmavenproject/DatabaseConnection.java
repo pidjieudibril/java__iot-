@@ -120,7 +120,7 @@ private static void createTableNoExist(Connection connection) {
 private static void createTable(Connection connection) {
     try {
         // Crée la table pour les appareil connecté si elle n'existe pas
-        String queryTocreateTable = "CREATE TABLE appareils (id SERIAL PRIMARY KEY, name VARCHAR(255), type VARCHAR(255),etat_fonctionnement VARCHAR(255), quantite INT)";
+        String queryTocreateTable = "CREATE TABLE appareils (id SERIAL PRIMARY KEY, name VARCHAR(255), type VARCHAR(255),etat_fonctionnement VARCHAR(255))";
         try (Statement statement = connection.createStatement()) {
             statement.executeUpdate(queryTocreateTable);
             System.out.println("table creer avec succes ");

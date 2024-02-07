@@ -32,7 +32,7 @@ public class Menu {
                     ajouterAppareil(connection);
                     break;
                 case 2:
-                    Traitement.selectData(connection);
+                    Traitement.afficherAppareil(connection);
                     break;
                 case 3:
                     MetreAjourAppreil(connection);
@@ -62,17 +62,21 @@ public class Menu {
         System.out.print("Quel est l'état de fonctionnement ?  ");
         String etatFonctionnement = myscanner.nextLine();
 
-        System.out.print("Entrez la quantité de l'appareil : ");
-        int quantite = myscanner.nextInt();
+    
         myscanner.nextLine(); // Consommer la nouvelle ligne
 
-        Traitement.insertData(connection, name, type, etatFonctionnement, quantite);
+        Traitement.ajouterAppareil(connection, name, type, etatFonctionnement);
     }
 
     private static void MetreAjourAppreil(Connection connection) {
         Scanner myscanner = new Scanner(System.in);
         System.out.print("Entrez le nom de l'appareil dont vous souhaitez mettre à jour les informations : ");
         String name = myscanner.nextLine();
+        if(!Traitement.appareilExiste(connection, name)){
+            System.out.println("l'appareil \"" +name + "\" n'existe pas, impossible de faire la mise a jour ");
+            return;
+        }
+
 
         System.out.print("Entrez le nouveau type de l'appareil : ");
         String newType = myscanner.nextLine();
@@ -80,11 +84,10 @@ public class Menu {
         System.out.print("Quel est le nouvel état de fonctionnement ? ");
         String newEtatFonctionnement = myscanner.nextLine();
 
-        System.out.print("Entrez la nouvelle quantité de l'appareil : ");
-        int newQuantite = myscanner.nextInt();
+        
         myscanner.nextLine(); // Consommer la nouvelle ligne
 
-        Traitement.updateData(connection, name, newType, newEtatFonctionnement, newQuantite);
+        Traitement.MetreAjourAppreil(connection, name, newType, newEtatFonctionnement);
     }
 
     private static void supprimerAppareil(Connection connection) {
@@ -92,6 +95,11 @@ public class Menu {
         System.out.print("Entrez le nom de l'appareil que vous souhaitez supprimer : ");
         String name = myscanner.nextLine();
 
-        Traitement.deleteData(connection, name);
+         if(!Traitement.appareilExiste(connection, name)){
+            System.out.println("l'appareil \"" +name + "\" n'existe pas, impossible de faire la suppression  ");
+             return;
+         }
+
+        Traitement.supprimerAppareil(connection, name);
     }
 }

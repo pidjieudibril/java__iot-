@@ -9,17 +9,17 @@ import java.sql.SQLException;
 public class Traitement {
 
     // Méthode pour insérer des données dans la base de données
-    public static void insertData(Connection connection, String name, String type, String etat_fonctionnement, int quantite) {
+    public static void ajouterAppareil(Connection connection, String name, String type, String etat_fonctionnement) {
         try {
             //id SERIAL PRIMARY KEY, nom VARCHAR(255), type VARCHAR(255),etat_fonctionnement VARCHAR(255), quantite INT)
             // Préparation de la requête SQL pour l'insertion de données
-            String sql = "INSERT INTO appareils (name, type, etat_fonctionnement, quantite) VALUES (?, ?, ?, ?)";
+            String sql = "INSERT INTO appareils (name, type, etat_fonctionnement) VALUES (?, ?, ?)";
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
                 // Remplacement des paramètres dans la requête
                 statement.setString(1, name);
                 statement.setString(2, type);
                 statement.setString(3, etat_fonctionnement);
-                statement.setInt(4, quantite);
+                
 
                 // Exécution de la requête
                 int rowsAffected = statement.executeUpdate();
@@ -31,20 +31,28 @@ public class Traitement {
     }
 
     // Méthode pour afficher toutes les données de la base de données
-    public static void selectData(Connection connection) {
+    public static void afficherAppareil(Connection connection) {
         try {
             // Exécution d'une requête de sélection
             String sql = "SELECT * FROM appareils";
             try (PreparedStatement statement = connection.prepareStatement(sql);
                  ResultSet resultSet = statement.executeQuery()) {
+                    //verifier si un appareil a deja ete enregistrer 
+                    if (!resultSet.next()) {
+                        System.out.println("Aucun appareil na ete deja enregistrer ");
+                        return; // Sortir de la méthode si aucun appareil n'est trouvé
+                    }
+                    // on Réinitialise alors le curseur ResultSet à la position initiale
+                    resultSet.beforeFirst();
                 // Traitement des résultats de la requête
                 while (resultSet.next()) {
                     String name = resultSet.getString("name");
                     String type =  resultSet.getString("type");
                     String etat_fonctionnement = resultSet.getString("etat_fonctionnement");
-                    int quantite = resultSet.getInt("quantite");
-                    System.out.println("appareils : " + name + ", type : " + type + ", etat_fonctionnement " + etat_fonctionnement + ", quantite " + quantite );
+                    System.out.println("appareils : " + name + ", type : " + type + ", etat_fonctionnement " + etat_fonctionnement );
                 }
+
+                
             }
         } catch (SQLException e) {
             System.err.println("Erreur lors de la sélection de données : " + e.getMessage());
@@ -53,7 +61,7 @@ public class Traitement {
 
     // Méthode pour mettre à jour l'âge d'un utilisateur
     // Méthode pour mettre à jour les données d'un appareil dans la base de données
-public static void updateData(Connection connection, String name, String type, String etat_fonctionnement, int quantite) {
+public static void MetreAjourAppreil(Connection connection, String name, String type, String etat_fonctionnement) {
     try {
         // Préparation de la requête SQL pour la mise à jour des donnees
         String sql = "UPDATE appareils SET type = ?, stat_fonctionnement = ?, quantite = ? WHERE name = ?";
@@ -61,7 +69,6 @@ public static void updateData(Connection connection, String name, String type, S
             // Remplacement des paramètres dans la requête
             statement.setString(1, type);
             statement.setString(2, etat_fonctionnement);
-            statement.setInt(3, quantite);
             statement.setString(4, name);
 
             // Exécution de la requête
@@ -80,7 +87,7 @@ public static void updateData(Connection connection, String name, String type, S
 
     // Méthode pour supprimer un utilisateur de la base de données
     // Méthode pour supprimer un appareil de la base de données
-public static void deleteData(Connection connection, String name) {
+public static void supprimerAppareil(Connection connection, String name) {
     try {
         // Préparation de la requête SQL pour la suppression d'un appareil
         String sql = "DELETE FROM appareils WHERE name = ?";
@@ -99,6 +106,33 @@ public static void deleteData(Connection connection, String name) {
     } catch (SQLException e) {
         System.err.println("erreur lors de la suppression d'appareil : " + e.getMessage());
     }
+}
+
+// methode qui permet de verifier si un appareil existe ou nom 
+public static boolean appareilExiste(Connection connection, String name){
+    boolean existe = false;
+    try {
+        // nous allons preparer la requette sql pour verifier l'existence de l'appareil
+        String sql = "SELECT COUNT(*) FROM appareils WHERE name = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, name);
+
+            //execution de la requette 
+            try (ResultSet resultSet = statement.executeQuery()){
+              // si une ligne est retourne cela signifie que l'appareil existe 
+              if(resultSet.next()){
+                int count = resultSet.getInt(1);
+                existe = count > 0 ;
+              }  
+            }
+        }
+    } catch (SQLException e) {
+        // TODO: handle exception
+        System.out.println("erreur laors de la verification de l'appareil " + e.getMessage());
+    }
+
+
+    return existe;
 }
 
 }
