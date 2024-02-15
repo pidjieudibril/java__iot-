@@ -19,6 +19,7 @@ public class DatabaseConnection {
             connection =  DriverManager.getConnection(dbURL, dbUser, dbPassword);
             createDbNoExist (connection, dbURL); //vérifie et crée la base de donnée si elle n'existe pas 
             createTableNoExist (connection); //vérifie et crée la table si elle n'existe pas 
+            createDonneesTableNoExist(connection);
         } catch (SQLException e) {
             e.printStackTrace(); // imprime les details de l'erreur 
             throw new SQLException("erreur lors de la connection  a la base de donnees ", e);
@@ -26,6 +27,16 @@ public class DatabaseConnection {
         return connection;
     }
 
+   
+    private static final String dbURL = "jdbc:postgresql://localhost:5432/appJavaTest1";
+    private static final String dbUser = "postgres";
+    private static final String dbPassword = "admin";
+
+    
+
+    public static Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(dbURL, dbUser, dbPassword);
+    }
     // methode pour fermer la connexion a notre base de donnees 
     public static void closeConnection(Connection connection) {
         try {
@@ -155,7 +166,7 @@ private static void createDonneesTableNoExist(Connection connection) {
 //creer la table pour les donnees de chaque appareil si elle n'exite pas 
 private static void createDonneesTable(Connection connection) {
     try {
-        String queryToCreateTable = "CREATE TABLE donnees_appareils (id SERIAL PRIMARY KEY, appareil_id INT, donnee VARCHAR(255), timestamp TIMESTAMP)";
+        String queryToCreateTable = "CREATE TABLE donnees_appareils (id SERIAL PRIMARY KEY, nomAppareil VARCHAR(255), donnee VARCHAR(255), timestamp TIMESTAMP)";
         try (Statement statement = connection.createStatement()) {
             statement.executeUpdate(queryToCreateTable);
             System.out.println("table donnees appareil ceer avec succes");
@@ -164,9 +175,6 @@ private static void createDonneesTable(Connection connection) {
         System.err.println("reeur lors de la creation  " + e.getMessage());
     }
 }
-
-
-
 
 
 }
