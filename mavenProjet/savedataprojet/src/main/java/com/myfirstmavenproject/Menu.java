@@ -84,7 +84,7 @@ public class Menu {
     }
 */private static void ajouterAppareil(Connection connection) {
     Scanner myscanner = new Scanner(System.in);
-    System.out.print("Entrez le nom de l'appareil : ");
+    System.out.print("Entrez le nom de l'appareil: ");
     String name = myscanner.nextLine();
 
     System.out.print("Entrez le type de l'appareil : ");
