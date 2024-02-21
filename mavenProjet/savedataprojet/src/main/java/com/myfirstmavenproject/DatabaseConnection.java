@@ -106,7 +106,7 @@ private static void createTableNoExist(Connection connection) {
             resultSet.next();
             boolean tableExists = resultSet.getBoolean(1);
 
-            // Si la table n'existe pas, créez-la
+            // Si la table n'existe pas, crée-la
             if (!tableExists) {
                 System.out.println("creation de la table appareils connecte ");
                 createTable(connection);
@@ -129,5 +129,45 @@ private static void createTable(Connection connection) {
         System.err.println("une erreur ses produit lors de la creation des tables : " + e.getMessage());
     }
 }
+
+// creation de la table pour les donnees de chaque appareil 
+
+private static void createDonneesTableNoExist(Connection connection) {
+    try {
+        //verifier si l table existe dans le shema d'informtion de la base de donnee
+        String checkIfTableExist = "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'donnees_appareils')";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(checkIfTableExist);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+
+            resultSet.next();
+            boolean tableExists = resultSet.getBoolean(1);
+                // si la table n'existe pas crée-la
+            if (!tableExists) {
+                System.out.println("creation de la table  donnees_appareils");
+                createDonneesTable(connection);
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("une erreur s'est produit lors de la creation des tables  " + e.getMessage());
+    }
+}
+
+//creer la table pour les donnees de chaque appareil si elle n'exite pas 
+private static void createDonneesTable(Connection connection) {
+    try {
+        String queryToCreateTable = "CREATE TABLE donnees_appareils (id SERIAL PRIMARY KEY, appareil_id INT, donnee VARCHAR(255), timestamp TIMESTAMP)";
+        try (Statement statement = connection.createStatement()) {
+            statement.executeUpdate(queryToCreateTable);
+            System.out.println("table donnees appareil ceer avec succes");
+        }
+    } catch (SQLException e) {
+        System.err.println("reeur lors de la creation  " + e.getMessage());
+    }
+}
+
+
+
+
+
 }
 
