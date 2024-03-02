@@ -1,6 +1,7 @@
 package com.myfirstmavenproject;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,34 +13,28 @@ import java.util.Scanner;
 public class Traitement {
 
     // Méthode pour insérer des données dans la base de données
-    public static void ajouterAppareil(Connection connection, String name, String type, String etat_fonctionnement) {
+    public static void ajouterAppareil(String nomAppareil, String typeAppareil, int idMicrocontroleur) {
+        Connection connection = null;
         try {
-            String sql = "INSERT INTO appareils (name, type, etat_fonctionnement) VALUES (?, ?, ?)";
-            try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                statement.setString(1, name);
-                statement.setString(2, type);
-                statement.setString(3, etat_fonctionnement);
-    
-                int rowsAffected = statement.executeUpdate();
-                System.out.println(rowsAffected + " lignes insérées avec succès");
-    
-                // Créer une instance de l'appareil et simuler les données si nécessaire
-                Appareil appareil = null;
-                if (type.equalsIgnoreCase("capteur")) {
-                    appareil = new Capteur(1,"unite");
-                } else if (type.equalsIgnoreCase("actionneur")) {
-                    appareil = new Actionneur();
-                }
-    
-                if (appareil != null) {
-                    // Simuler plusieurs données pour l'appareil nouvellement créé
-                    for (int i = 0; i < 20; i++) { // Changez 3 au nombre de données que vous voulez simuler
-                        appareil.simulerDonnee();
-                    }
-                }
+            connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/appJavaTest1", "postgres", "admin");
+            String query = "INSERT INTO appareils (nom, type, microcontroleur_id) VALUES (?, ?, ?)";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setString(1, nomAppareil);
+                preparedStatement.setString(2, typeAppareil);
+                preparedStatement.setInt(3, idMicrocontroleur);
+                preparedStatement.executeUpdate();
+                System.out.println("Appareil ajouté avec succès");
             }
         } catch (SQLException e) {
-            System.err.println("Erreur lors de l'insertion de données : " + e.getMessage());
+            System.err.println("Erreur lors de l'ajout de l'appareil : " + e.getMessage());
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    System.err.println("Erreur lors de la fermeture de la connexion : " + e.getMessage());
+                }
+            }
         }
     }
     
