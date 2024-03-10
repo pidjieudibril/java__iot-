@@ -74,7 +74,7 @@ public class Menu {
         } while (choice != 9);
         scanner.close();
     }
-
+// methode pour ajouter les microcontroleur 
     private static void ajouterMicrocontroleur(Connection connection) {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Entrez le nom du microcontrôleur : ");
@@ -92,7 +92,7 @@ public class Menu {
         System.out.println("Microcontrôleur ajouté avec succès.");
     }
     
-
+// methode pour ajouter les appareil dans la base de donnee
     private static void ajouterAppareil(Connection connection) {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Choisissez le microcontrôleur auquel l'appareil sera lié : ");
@@ -103,13 +103,23 @@ public class Menu {
         if (microcontroleur != null) {
             System.out.print("Entrez le nom de l'appareil : ");
             String nomAppareil = scanner.nextLine();
-            System.out.print("Entrez le type de l'appareil : ");
-            String typeAppareil = scanner.nextLine();
-            Traitement.ajouterAppareil(connection, nomAppareil, typeAppareil, microcontroleur.getId());
+            String typeAppareil;
+            do {
+                System.out.print("Entrez le type de l'appareil (capteur/actionneur) : ");
+                typeAppareil = scanner.nextLine().toLowerCase(); // Convertir en minuscules pour comparer
+                if (!typeAppareil.equals("capteur") && !typeAppareil.equals("actionneur")) {
+                    System.out.println("Type d'appareil invalide. Veuillez entrer capteur ou actionneur.");
+                }
+            } while (!typeAppareil.equals("capteur") && !typeAppareil.equals("actionneur"));
+    
+            System.out.print("Entrez l'état de fonctionnement de l'appareil : ");
+            String etatFonctionnement = scanner.nextLine();
+            Traitement.ajouterAppareil(connection, nomAppareil, typeAppareil, etatFonctionnement, microcontroleur.getId());
         } else {
             System.out.println("Microcontrôleur non trouvé.");
         }
     }
+    
 
     private static void afficherAppareils(Connection connection) {
         Traitement.afficherAppareils(connection);
@@ -156,7 +166,7 @@ public class Menu {
     private static void afficherMicrocontroleurs(Connection connection) {
         List<Microcontroleur> microcontroleurs = Traitement.getMicrocontroleurs(connection);
         for (Microcontroleur microcontroleur : microcontroleurs) {
-            System.out.println("ID : " + microcontroleur.getId() + " NOM : " + microcontroleur.getNom()+" | Adresse IP : " + microcontroleur.getAdresseIP());
+            System.out.println("ID : " + microcontroleur.getId() + " | Nom  : " + microcontroleur.getNom()+" | Adresse IP : " + microcontroleur.getAdresseIP());
         }
     }
 // methode pour la verification de la validité de l'adresse ip 

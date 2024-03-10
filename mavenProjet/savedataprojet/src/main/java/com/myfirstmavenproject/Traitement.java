@@ -28,10 +28,54 @@ public class Traitement {
             System.err.println("Erreur lors de l'insertion du microcontrôleur dans la base de données : " + e.getMessage());
         }
     }
+
+    // methode pour ajouter un appareil dans la base de donnée 
+    public static void ajouterAppareil(Connection connection, String nomAppareil, String etatFonctionnement, String typeAppareil, int idMicrocontroleur) {
+        String query = "INSERT INTO appareils (nom_app, type, etat_fonctionnement, adresse_ip) VALUES (?, ?, ?, ?)";
+        
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            // Remplir les paramètres de la requête préparée
+            preparedStatement.setString(1, nomAppareil);
+            preparedStatement.setString(2, typeAppareil);
+            preparedStatement.setString(3, etatFonctionnement);
+            
+            // Récupérer l'adresse IP du microcontrôleur correspondant à l'id fourni
+            String adresseIP = getAdresseIPMicrocontroleur(connection, idMicrocontroleur);
+            preparedStatement.setString(4, adresseIP);
+            
+            // Exécuter la requête d'insertion
+            int rowsAffected = preparedStatement.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Appareil ajouté à la base de données avec succès.");
+            } else {
+                System.out.println("Échec de l'ajout de l'appareil à la base de données.");
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de l'ajout de l'appareil à la base de données : " + e.getMessage());
+        }
+    }
+    
+    // Méthode pour récupérer l'adresse IP du microcontrôleur correspondant à l'id fourni
+    private static String getAdresseIPMicrocontroleur(Connection connection, int idMicrocontroleur) throws SQLException {
+        String query = "SELECT adresse_ip FROM microcontroleur WHERE id = ?";
+        
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, idMicrocontroleur);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getString("adresse_ip");
+                }
+            }
+        }
+        
+        // Retourner une chaîne vide si aucune adresse IP n'a été trouvée
+        return "";
+    }
+/* 
    // Méthode pour ajouter un appareil à la file d'attente
-   public static void ajouterAppareil(Connection connection, String nomAppareil, String typeAppareil, int idMicrocontroleur) {
+   public static void ajouterAppareil(Connection connection, String nomAppareil,String etatFonctionnement, String typeAppareil, int idMicrocontroleur) {
     // Ajouter l'appareil dans la file avant de l'enregistrer dans la base de données
-    Donnee donnee = new Donnee(nomAppareil, typeAppareil, idMicrocontroleur);
+    Donnee donnee = new Donnee(nomAppareil ,etatFonctionnement, typeAppareil, idMicrocontroleur);
     ajouterDonnee(donnee);
     System.out.println("Appareil ajouté à la file d'attente.");
 }
@@ -50,7 +94,7 @@ public class Traitement {
         // Implémentez la logique pour enregistrer l'appareil dans la base de données
         // Utilisez les informations fournies dans l'objet Donnee
     }
-
+*/
     // Méthode pour afficher les appareils liés à chaque microcontrôleur
     public static void afficherAppareils(Connection connection) {
         for (Microcontroleur microcontroleur : microcontroleurs) {
@@ -72,7 +116,7 @@ public class Traitement {
     public static Microcontroleur getMicrocontroleurById(Connection connection, int id) {
         Microcontroleur microcontroleur = null;
         try {
-            String query = "SELECT * FROM microcontroleurs WHERE id = ?";
+            String query = "SELECT * FROM microcontroleur WHERE id = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
                 preparedStatement.setInt(1, id);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -95,7 +139,7 @@ public class Traitement {
     
         try {
             // Préparez la requête SQL pour obtenir les identifiants des appareils avec le nom spécifié
-            String sql = "SELECT id FROM appareils WHERE nom = ?";
+            String sql = "SELECT id FROM appareils WHERE nom_app = ?";
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
                 // Remplacez le paramètre dans la requête par le nom de l'appareil spécifié
                 statement.setString(1, nomAppareil);
@@ -129,7 +173,7 @@ public class Traitement {
                     // Parcours des résultats pour créer les objets Microcontroleur
                     while (resultSet.next()) {
                         int id = resultSet.getInt("id");
-                        String nom = resultSet.getString("nom");
+                        String nom = resultSet.getString("nom_microcontroleur");
                         String adresseIP = resultSet.getString("adresse_ip");
                         Microcontroleur microcontroleur = new Microcontroleur(id,nom, adresseIP);
                         microcontroleurs.add(microcontroleur);

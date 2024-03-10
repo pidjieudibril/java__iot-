@@ -4,10 +4,12 @@ public class Donnee {
     private String nomAppareil;
     private String typeAppareil;
     private int idMicrocontroleur;
+    private String etatFonctionnement;
 
-    public Donnee(String nomAppareil, String typeAppareil, int idMicrocontroleur) {
+    public Donnee(String nomAppareil, String typeAppareil,String etatFonctionnement, int idMicrocontroleur) {
         this.nomAppareil = nomAppareil;
         this.typeAppareil = typeAppareil;
+        this.etatFonctionnement = etatFonctionnement;
         this.idMicrocontroleur = idMicrocontroleur;
     }
 
