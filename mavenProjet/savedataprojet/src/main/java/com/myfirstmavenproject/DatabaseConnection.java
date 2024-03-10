@@ -20,6 +20,7 @@ public class DatabaseConnection {
             createDbNoExist (connection, dbURL); //vérifie et crée la base de donnée si elle n'existe pas 
             createTableNoExist (connection); //vérifie et crée la table si elle n'existe pas 
             createDonneesTableNoExist(connection);
+            createMicrocontroleurTableNoExist(connection);
         } catch (SQLException e) {
             e.printStackTrace(); // imprime les details de l'erreur 
             throw new SQLException("erreur lors de la connection  a la base de donnees ", e);
@@ -28,7 +29,7 @@ public class DatabaseConnection {
     }
 
    
-    private static final String dbURL = "jdbc:postgresql://localhost:5432/appJavaTest1";
+    private static final String dbURL = "jdbc:postgresql://localhost:5432/appJavaTest4";
     private static final String dbUser = "postgres";
     private static final String dbPassword = "admin";
 
@@ -104,8 +105,46 @@ private static void createDb (Connection connection, String dbName){
 }
 
 
-// creation de la table si elle n'exite pas 
 
+
+
+// creation de la table pour les donnees de chaque appareil 
+
+private static void  createMicrocontroleurTableNoExist(Connection connection) {
+    try {
+        //verifier si l table existe dans le shema d'informtion de la base de donnee
+        String checkIfTableExist = "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'microcontroleur')";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(checkIfTableExist);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+
+            resultSet.next();
+            boolean tableExists = resultSet.getBoolean(1);
+                // si la table n'existe pas crée-la
+            if (!tableExists) {
+                System.out.println("creation de la table  microcontroleur");
+                createMicrocontroleurTable(connection);
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("une erreur s'est produit lors de la creation des tables  " + e.getMessage());
+    }
+}
+
+//creer la table pour les donnees de chaque appareil si elle n'exite pas 
+private static void createMicrocontroleurTable(Connection connection) {
+    try {
+        String queryToCreateTable = "CREATE TABLE microcontroleur (id SERIAL PRIMARY KEY, nom_microcontroleur VARCHAR(255), adresse_ip VARCHAR(255) UNIQUE)";
+        try (Statement statement = connection.createStatement()) {
+            statement.executeUpdate(queryToCreateTable);
+            System.out.println("Table microcontroleur créée avec succès");
+        }
+    } catch (SQLException e) {
+        System.err.println("Erreur lors de la création de la table microcontroleur : " + e.getMessage());
+    }
+}
+
+
+// creation de la table si elle n'exite pas 
 
 private static void createTableNoExist(Connection connection) {
     try {
@@ -119,27 +158,33 @@ private static void createTableNoExist(Connection connection) {
 
             // Si la table n'existe pas, crée-la
             if (!tableExists) {
-                System.out.println("creation de la table appareils connecte ");
+                System.out.println("Création de la table appareils connecte");
                 createTable(connection);
+            } else {
+                System.out.println("La table appareils existe déjà");
             }
         }
     } catch (SQLException e) {
-        System.err.println("la table n'exite pas  " + e.getMessage());
+        System.err.println("Erreur lors de la création de la table appareils : " + e.getMessage());
     }
 }
 
+
 private static void createTable(Connection connection) {
     try {
-        // Crée la table pour les appareil connecté si elle n'existe pas
-        String queryTocreateTable = "CREATE TABLE appareils (id SERIAL PRIMARY KEY, name VARCHAR(255), type VARCHAR(255),etat_fonctionnement VARCHAR(255))";
+        // Crée la table pour les appareils connectés si elle n'existe pas
+        String queryToCreateTable = "CREATE TABLE appareils (id SERIAL PRIMARY KEY, nom_app VARCHAR(255) UNIQUE, type VARCHAR(255), etat_fonctionnement VARCHAR(255), adresse_ip VARCHAR(255) REFERENCES microcontroleur(adresse_ip))";
         try (Statement statement = connection.createStatement()) {
-            statement.executeUpdate(queryTocreateTable);
-            System.out.println("table creer avec succes ");
+            statement.executeUpdate(queryToCreateTable);
+            System.out.println("Table appareils créée avec succès");
         }
     } catch (SQLException e) {
-        System.err.println("une erreur ses produit lors de la creation des tables : " + e.getMessage());
+        System.err.println("Une erreur s'est produite lors de la création de la table appareils: " + e.getMessage());
     }
 }
+
+
+
 
 // creation de la table pour les donnees de chaque appareil 
 
@@ -166,15 +211,23 @@ private static void createDonneesTableNoExist(Connection connection) {
 //creer la table pour les donnees de chaque appareil si elle n'exite pas 
 private static void createDonneesTable(Connection connection) {
     try {
-        String queryToCreateTable = "CREATE TABLE donnees_appareils (id SERIAL PRIMARY KEY, nomAppareil VARCHAR(255), donnee VARCHAR(255), timestamp TIMESTAMP)";
+        String queryToCreateTable = "CREATE TABLE donnees_appareils (id SERIAL PRIMARY KEY,  donnee VARCHAR(255), timestamp TIMESTAMP, nom_app VARCHAR(255) REFERENCES appareils(nom_app)) " ;
         try (Statement statement = connection.createStatement()) {
             statement.executeUpdate(queryToCreateTable);
-            System.out.println("table donnees appareil ceer avec succes");
+            System.out.println("Table donnees_appareils créée avec succès");
         }
     } catch (SQLException e) {
-        System.err.println("reeur lors de la creation  " + e.getMessage());
+        System.err.println("Erreur lors de la création de la table donnees_appareils : " + e.getMessage());
     }
 }
+
+
+
+
+
+
+
+
 
 
 }

@@ -1,33 +1,52 @@
 package com.myfirstmavenproject;
-
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Microcontroleur {
+    private int id;
+    private String nom;
+    private String adresseIP;
+    private List<Appareil> appareils;
 
-    public static void ajouterMicrocontroleur(String nomMicrocontroleur) {
-        Connection connection = null;
-        try {
-            connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/appJavaTest1", "postgres", "admin");
-            String query = "INSERT INTO microcontroleurs (nom) VALUES (?)";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                preparedStatement.setString(1, nomMicrocontroleur);
-                preparedStatement.executeUpdate();
-                System.out.println("Microcontrôleur ajouté avec succès");
-            }
-        } catch (SQLException e) {
-            System.err.println("Erreur lors de l'ajout du microcontrôleur : " + e.getMessage());
-        } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    System.err.println("Erreur lors de la fermeture de la connexion : " + e.getMessage());
-                }
-            }
+    public Microcontroleur(String adresseIP) {
+        this.adresseIP = adresseIP;
+        this.appareils = new ArrayList<>();
+    }
+      public Microcontroleur(String nom, String adresseIP) {
+            this.nom = nom;
+            this.adresseIP = adresseIP;
+            this.appareils = new ArrayList<>();
         }
+    public Microcontroleur(int id, String nom, String adresseIP) {
+        this.id = id;
+        this.nom = nom;
+        this.adresseIP = adresseIP;
+        this.appareils = new ArrayList<>();
+    }
+    public void setId(int id)
+    {
+           this.id = id; 
+        }
+
+          public int getId()
+            {
+                return id;
+                }
+
+                public String getNom()
+                            {
+                                return nom;
+                                }
+    public String getAdresseIP() {
+        return adresseIP;
+    }
+
+    public void ajouterAppareil(Appareil appareil) {
+        appareils.add(appareil);
+    }
+
+    public List<Appareil> getAppareils() {
+        return appareils;
     }
 }
+

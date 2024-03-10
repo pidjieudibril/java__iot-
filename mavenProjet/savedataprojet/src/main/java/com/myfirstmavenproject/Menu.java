@@ -7,10 +7,8 @@ import java.util.Scanner;
 
 public class Menu {
 
-    private static final int MAX_DATA_COUNT = 30;
-
     public static void mainMenu(Connection connection) {
-        Scanner myscanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in);
 
         int choice;
 
@@ -19,166 +17,151 @@ public class Menu {
             System.out.println("*************************");
             System.out.println("        Menu :");
             System.out.println("*************************");
-            System.out.printf("%-2s %-22s %s%n", "1 :", "Ajouter un appareils", "*");
-            System.out.printf("%-2s %-22s %s%n", "2 :", "afficher les appareils", "*");
-            System.out.printf("%-2s %-22s %s%n", "3 :", "mettre a jour un appareils", "*");
-            System.out.printf("%-2s %-22s %s%n", "4 :", "supprimer um appareils", "*");
-            System.out.printf("%-2s %-22s %s%n", "5 :", "Afficher la file et la vider", "*");
-            System.out.printf("%-2s %-22s %s%n", "6 :", "Quitter le programme", "*");
+            System.out.printf("%-2s %-22s %s%n", "1 :", "Ajouter un microcontrôleur", "*");
+            System.out.printf("%-2s %-22s %s%n", "2 :", "Ajouter un appareil", "*");
+            System.out.printf("%-2s %-22s %s%n", "3 :", "Afficher les appareils", "*");
+            System.out.printf("%-2s %-22s %s%n", "4 :", "Afficher les données d'un appareil", "*");
+            System.out.printf("%-2s %-22s %s%n", "5 :", "Mettre à jour un appareil", "*");
+            System.out.printf("%-2s %-22s %s%n", "6 :", "Supprimer un appareil", "*");
+            System.out.printf("%-2s %-22s %s%n", "7 :", "Mettre à jour un microcontrôleur", "*");
+            System.out.printf("%-2s %-22s %s%n", "8 :", "Supprimer un microcontrôleur", "*");
+            System.out.printf("%-2s %-22s %s%n", "9 :", "Quitter le programme", "*");
             System.out.println("*************************");
-          
+
             System.out.print("Choisissez une option : ");
-            try{
-            choice = myscanner.nextInt();
-            myscanner.nextLine(); 
+            try {
+                choice = scanner.nextInt();
+                scanner.nextLine(); 
 
-            switch (choice) {
-                case 1:
-                    ajouterAppareil(connection);
-                    break;
-                case 2:
-                    Traitement.afficherAppareil(connection);
-                    break;
-                case 3:
-                    MetreAjourAppreil(connection);
-                    break;
-                case 4:
-                    supprimerAppareil(connection);
-
-                case 5:
-                    afficherEtViderFile();
-                    break;
-                case 6:
-                    DatabaseConnection.closeConnection(connection);
-                    System.out.println("Programme terminé");
-                    System.exit(0);
-                    break;
-                default:
-                    System.out.println("Option non valide, veiller choisir les option du menu ");
-            }
-        }catch (InputMismatchException e ) {
-            System.out.println("Entrée invalide, veuillez saisir un nombre");
-                myscanner.nextLine(); // Consommer la nouvelle ligne pour éviter une boucle infinie
+                switch (choice) {
+                    case 1:
+                        ajouterMicrocontroleur(connection);
+                        break;
+                    case 2:
+                        ajouterAppareil(connection);
+                        break;
+                    case 3:
+                        afficherAppareils(connection);
+                        break;
+                    case 4:
+                        afficherDonneesAppareil(connection);
+                        break;
+                    case 5:
+                        mettreAJourAppareil(connection);
+                        break;
+                    case 6:
+                        supprimerAppareil(connection);
+                        break;
+                    case 7:
+                        mettreAJourMicrocontroleur(connection);
+                        break;
+                    case 8:
+                        supprimerMicrocontroleur(connection);
+                        break;
+                    case 9:
+                        DatabaseConnection.closeConnection(connection);
+                        System.out.println("Programme terminé");
+                        System.exit(0);
+                        break;
+                    default:
+                        System.out.println("Option non valide, veuillez choisir une option du menu");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Entrée invalide, veuillez saisir un nombre");
+                scanner.nextLine(); // Consommer la nouvelle ligne pour éviter une boucle infinie
                 choice = 0; // Réinitialiser choice pour continuer la boucle
-          
-        }
-        }while (choice != 6);
-        myscanner.close();
+            }
+        } while (choice != 9);
+        scanner.close();
     }
-/* 
-    private static void ajouterAppareil(Connection connection) {
-        Scanner myscanner = new Scanner(System.in);
-        System.out.print("Entrez le nom de l'appareil : ");
-        String name = myscanner.nextLine();
 
-        System.out.print("Entrez le type de l'appareil : ");
-        String type = myscanner.nextLine();
-
-        System.out.print("Quel est l'état de fonctionnement ?  ");
-        String etatFonctionnement = myscanner.nextLine();
-
+    private static void ajouterMicrocontroleur(Connection connection) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Entrez le nom du microcontrôleur : ");
+        String nom = scanner.nextLine();
+        String adresseIP;
+        do {
+            System.out.print("Entrez l'adresse IP du microcontrôleur : ");
+            adresseIP = scanner.nextLine();
+            if (!validerAdresseIP(adresseIP)) {
+                System.out.println("Adresse IP invalide. Veuillez entrer une adresse IP valide.");
+            }
+        } while (!validerAdresseIP(adresseIP));
     
-        myscanner.nextLine(); // Consommer la nouvelle ligne
-
-        Traitement.ajouterAppareil(connection, name, type, etatFonctionnement);
+        Traitement.ajouterMicrocontroleur(connection, nom, adresseIP);
+        System.out.println("Microcontrôleur ajouté avec succès.");
     }
-*/private static void ajouterAppareil(Connection connection) {
-    Scanner myscanner = new Scanner(System.in);
-    System.out.print("Entrez le nom de l'appareil: ");
-    String name = myscanner.nextLine();
+    
 
-    System.out.print("Entrez le type de l'appareil : ");
-    String type = myscanner.nextLine();
-
-    System.out.print("Quel est l'état de fonctionnement ?  ");
-    String etatFonctionnement = myscanner.nextLine();
-
-    // Appel à la méthode pour ajouter un appareil
-    Traitement.ajouterAppareil(connection, name, type, etatFonctionnement);
-
-    // Maintenant, vérifiez si cet appareil est un capteur ou un actionneur
-    if (type.equalsIgnoreCase("capteur")) {
-        // Si c'est un capteur, simulez ses données
-        Capteur capteur = new Capteur(1,"unite");
-        capteur.simulerDonnee();
-    } else if (type.equalsIgnoreCase("actionneur")) {
-        // Si c'est un actionneur, simulez ses données
-        Actionneur actionneur = new Actionneur();
-        actionneur.simulerDonnee();
-    } else {
-        System.out.println("Type d'appareil non pris en charge pour la simulation de données.");
-    }
-
-    // Maintenant, affichez la file de données simulées
-    SimulationDonnee.afficherFile();
-}
-
-    private static void MetreAjourAppreil(Connection connection) {
-        Scanner myscanner = new Scanner(System.in);
-        System.out.print("Entrez le nom de l'appareil dont vous souhaitez mettre à jour les informations : ");
-        String name = myscanner.nextLine();
-        if(!Traitement.appareilExiste(connection, name)){
-            System.out.println("l'appareil \"" +name + "\" n'existe pas, impossible de faire la mise a jour ");
-            return;
-        }
-
-         System.out.print("Entrez le nouveau nom de l'appareil : ");
-        String newName = myscanner.nextLine();
-        System.out.print("Entrez le nouveau type de l'appareil : ");
-        String newType = myscanner.nextLine();
-
-        System.out.print("Quel est le nouvel état de fonctionnement ? ");
-        String newEtatFonctionnement = myscanner.nextLine();
-
-        
-        myscanner.nextLine(); // Consommer la nouvelle ligne
-
-        Traitement.MetreAjourAppreil(connection,name, newName, newType, newEtatFonctionnement);
-    }
-// methode pour effectuer la suppresion des donnees dans la base de donnee
-  private static void supprimerAppareil(Connection connection) {
-    Scanner myscanner = new Scanner(System.in);
-    System.out.print("Entrer le nom de l'appareil que vous voulez supprimer : ");
-    String name = myscanner.nextLine();
-
-    // on verifie si l'appareil existe et s/il y en a avec plusieur nom 
-    List<Integer> appareilIds = Traitement.getAppareilIds(connection, name);
-    if (appareilIds.isEmpty()) {
-        System.out.println("L'appareil \"" + name + "\" n'existe pas, pas de suppression possible");
-        return;
-    } else if (appareilIds.size() > 1) {
-        // Afficher la liste des appareils avec leur identifiant
-        System.out.println("Plusieurs appareils trouvés avec le nom \"" + name + "\":");
-        for (Integer id : appareilIds) {
-            System.out.println("ID : " + id);
-        }
-        // Demander à l'utilisateur de choisir l'appareil à supprimer par son identifiant
-        System.out.print("Veuillez saisir l'identifiant de l'appareil que vous souhaitez supprimer : ");
-        int selectedId = myscanner.nextInt();
-        myscanner.nextLine(); // Consommer la nouvelle ligne
-        // Demander la confirmation
-        System.out.print("Confirmez-vous la suppression de l'appareil (oui/non) ? ");
-        String confirmation = myscanner.nextLine();
-        if (confirmation.equalsIgnoreCase("oui")) {
-            Traitement.supprimerAppareil(connection, selectedId);
+    private static void ajouterAppareil(Connection connection) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Choisissez le microcontrôleur auquel l'appareil sera lié : ");
+        afficherMicrocontroleurs(connection);
+        int choixMicrocontroleur = scanner.nextInt();
+        scanner.nextLine(); // Consommer la nouvelle ligne
+        Microcontroleur microcontroleur = Traitement.getMicrocontroleurById(connection, choixMicrocontroleur);
+        if (microcontroleur != null) {
+            System.out.print("Entrez le nom de l'appareil : ");
+            String nomAppareil = scanner.nextLine();
+            System.out.print("Entrez le type de l'appareil : ");
+            String typeAppareil = scanner.nextLine();
+            Traitement.ajouterAppareil(connection, nomAppareil, typeAppareil, microcontroleur.getId());
         } else {
-            System.out.println("la suppression a été annulee");
-        }
-    } else {
-        // Demander confirmation pour un seul appareil
-        System.out.print("Confirmez-vous la suppression de l'appareil \"" + name + "\" (oui/non) ? ");
-        String confirmation = myscanner.nextLine();
-        if (confirmation.equalsIgnoreCase("oui")) {
-            Traitement.supprimerAppareil(connection, appareilIds.get(0));
-        } else {
-            System.out.println("la suppression a été annulee");
+            System.out.println("Microcontrôleur non trouvé.");
         }
     }
-}
-private static void afficherEtViderFile() {
-    // Méthode pour afficher et vider la pile
-    SimulationDonnee.afficherFile();
-   
-}
 
+    private static void afficherAppareils(Connection connection) {
+        Traitement.afficherAppareils(connection);
+    }
+
+    private static void afficherDonneesAppareil(Connection connection) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Entrez le nom de l'appareil dont vous voulez afficher les données : ");
+        String nomAppareil = scanner.nextLine();
+        List<Integer> ids = Traitement.getAppareilIds(connection, nomAppareil);
+        if (!ids.isEmpty()) {
+            if (ids.size() > 1) {
+                System.out.println("Plusieurs appareils trouvés avec ce nom. Choisissez l'ID de l'appareil : ");
+                for (Integer id : ids) {
+                    System.out.println("ID : " + id);
+                }
+                int choixId = scanner.nextInt();
+                scanner.nextLine(); // Consommer la nouvelle ligne
+                Traitement.afficherDonneesAppareil(connection, choixId);
+            } else {
+                Traitement.afficherDonneesAppareil(connection, ids.get(0));
+            }
+        } else {
+            System.out.println("Aucun appareil trouvé avec ce nom.");
+        }
+    }
+
+    private static void mettreAJourAppareil(Connection connection) {
+        // À compléter
+    }
+
+    private static void supprimerAppareil(Connection connection) {
+        // À compléter
+    }
+
+    private static void mettreAJourMicrocontroleur(Connection connection) {
+        // À compléter
+    }
+
+    private static void supprimerMicrocontroleur(Connection connection) {
+        // À compléter
+    }
+
+    private static void afficherMicrocontroleurs(Connection connection) {
+        List<Microcontroleur> microcontroleurs = Traitement.getMicrocontroleurs(connection);
+        for (Microcontroleur microcontroleur : microcontroleurs) {
+            System.out.println("ID : " + microcontroleur.getId() + " NOM : " + microcontroleur.getNom()+" | Adresse IP : " + microcontroleur.getAdresseIP());
+        }
+    }
+// methode pour la verification de la validité de l'adresse ip 
+    private static boolean validerAdresseIP(String adresseIP) {
+        String pattern = "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
+        return adresseIP.matches(pattern);
+    }
 }

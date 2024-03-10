@@ -1,139 +1,108 @@
 package com.myfirstmavenproject;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Scanner;
-
+import java.util.Queue;
 
 public class Traitement {
+     
+     private static Queue<Donnee> fileAttente = new LinkedList<>();
+    private static List<Microcontroleur> microcontroleurs = new ArrayList<>();
+//methode pour ajouter un microcontroleur dans la base de donnée 
+    public static void ajouterMicrocontroleur(Connection connection, String nom, String adresseIP) {
+        Microcontroleur microcontroleur = new Microcontroleur(nom, adresseIP); // Créer une instance de Microcontroleur
+        microcontroleurs.add(microcontroleur); // Ajouter le microcontrôleur à la liste en mémoire
 
-    // Méthode pour insérer des données dans la base de données
-    public static void ajouterAppareil(String nomAppareil, String typeAppareil, int idMicrocontroleur) {
-        Connection connection = null;
-        try {
-            connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/appJavaTest1", "postgres", "admin");
-            String query = "INSERT INTO appareils (nom, type, microcontroleur_id) VALUES (?, ?, ?)";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                preparedStatement.setString(1, nomAppareil);
-                preparedStatement.setString(2, typeAppareil);
-                preparedStatement.setInt(3, idMicrocontroleur);
-                preparedStatement.executeUpdate();
-                System.out.println("Appareil ajouté avec succès");
-            }
+        // Insérer le microcontrôleur dans la base de données
+        String query = "INSERT INTO microcontroleur (nom_microcontroleur, adresse_ip) VALUES (?, ?)";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, nom);
+            preparedStatement.setString(2, adresseIP);
+            preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            System.err.println("Erreur lors de l'ajout de l'appareil : " + e.getMessage());
-        } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    System.err.println("Erreur lors de la fermeture de la connexion : " + e.getMessage());
-                }
-            }
+            System.err.println("Erreur lors de l'insertion du microcontrôleur dans la base de données : " + e.getMessage());
         }
     }
-    
-    
+   // Méthode pour ajouter un appareil à la file d'attente
+   public static void ajouterAppareil(Connection connection, String nomAppareil, String typeAppareil, int idMicrocontroleur) {
+    // Ajouter l'appareil dans la file avant de l'enregistrer dans la base de données
+    Donnee donnee = new Donnee(nomAppareil, typeAppareil, idMicrocontroleur);
+    ajouterDonnee(donnee);
+    System.out.println("Appareil ajouté à la file d'attente.");
+}
 
-
-    // Méthode pour afficher toutes les données de la base de données
-    public static void afficherAppareil(Connection connection) {
-        try {
-            // Exécution d'une requête de sélection
-            String sql = "SELECT * FROM appareils";
-            try (PreparedStatement statement = connection.prepareStatement(sql);
-                 ResultSet resultSet = statement.executeQuery()) {
-                 boolean appareilFind = false; 
-                
-                // Traitement des résultats de la requête
-                while (resultSet.next()) {
-                    appareilFind = true;
-                    String name = resultSet.getString("name");
-                    String type =  resultSet.getString("type");
-                    String etat_fonctionnement = resultSet.getString("etat_fonctionnement");
-                    System.out.println("appareils : " + name + ", type : " + type + ", etat_fonctionnement " + etat_fonctionnement );
-                }
-                if (!appareilFind) {
-                    System.out.println("nous avons pas encore d'appareil enregistre");
-                    
-                }
-
-                
-            }
-        } catch (SQLException e) {
-            System.err.println("Erreur lors de la sélection de données : " + e.getMessage());
-        }
-    }
-
-    // Méthode pour mettre à jour l'âge d'un utilisateur
-    // Méthode pour mettre à jour les données d'un appareil dans la base de données
-public static void MetreAjourAppreil(Connection connection, String name, String newName, String newType, String newEtatFonctionnement) {
-        try {
-        // Préparation de la requête SQL pour la mise à jour des donnees
-        String sql = "UPDATE appareils SET name = ?, type = ?, etat_fonctionnement = ? WHERE name = ?";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            // Remplacement des paramètres dans la requête
-            statement.setString(1, newName);
-            statement.setString(2, newType);
-            statement.setString(3, newEtatFonctionnement);
-            statement.setString(4, name);
-
-            // Exécution de la requête
-            int rowsAffected = statement.executeUpdate();
-            if (rowsAffected > 0) {
-                System.out.println(rowsAffected + " ligne miose a jour ");
-            } else {
-                System.out.println("aucun appareils trouve avec le nom " + name);
-            }
-        }
-    } catch (SQLException e) {
-        System.err.println("Erreur lors de la mise à jour des donnees : " + e.getMessage());
+   // Méthode pour enregistrer les appareils de la file d'attente dans la base de données
+   public static void enregistrerAppareils(Connection connection) {
+    while (!fileAttente.isEmpty()) {
+        Donnee donnee = fileAttente.poll();
+        // Appel de la méthode pour enregistrer l'appareil dans la base de données
+        enregistrerAppareil(connection, donnee);
     }
 }
 
+    // Méthode pour enregistrer un appareil dans la base de données
+    private static void enregistrerAppareil(Connection connection, Donnee donnee) {
+        // Implémentez la logique pour enregistrer l'appareil dans la base de données
+        // Utilisez les informations fournies dans l'objet Donnee
+    }
 
-    // Méthode pour supprimer un utilisateur de la base de données
-    // Méthode pour supprimer un appareil de la base de données
-    public static void supprimerAppareil(Connection connection, int id) {
-        try {
-            // Préparation de la requête SQL pour la suppression d'un appareil par identifiant
-            String sql = "DELETE FROM appareils WHERE id = ?";
-            try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                // Remplacement des paramètres dans la requête
-                statement.setInt(1, id);
-    
-                // Exécution de la requête
-                int rowsAffected = statement.executeUpdate();
-                if (rowsAffected > 0) {
-                    System.out.println(rowsAffected + " ligne supprimée");
-                } else {
-                    System.out.println("Aucun appareil trouvé avec l'identifiant : " + id);
+    // Méthode pour afficher les appareils liés à chaque microcontrôleur
+    public static void afficherAppareils(Connection connection) {
+        for (Microcontroleur microcontroleur : microcontroleurs) {
+            System.out.println("Microcontrôleur " + microcontroleur.getAdresseIP() + " :");
+            List<Appareil> appareils = microcontroleur.getAppareils();
+            if (appareils.isEmpty()) {
+                System.out.println("Aucun appareil lié à ce microcontrôleur.");
+            } else {
+                for (Appareil appareil : appareils) {
+                    System.out.println("Nom : " + appareil.getNom() + ", Type : " + appareil.getType());
                 }
             }
-        } catch (SQLException e) {
-            System.err.println("Erreur lors de la suppression de l'appareil : " + e.getMessage());
+            System.out.println();
         }
     }
 
 
-// methode pour obtnir les identifiant avec les nom specifique 
-     public static List<Integer> getAppareilIds(Connection connection, String name) {
-        List<Integer> ids = new ArrayList<>();
+     // Méthode pour récupérer un microcontrôleur par son identifiant
+    public static Microcontroleur getMicrocontroleurById(Connection connection, int id) {
+        Microcontroleur microcontroleur = null;
         try {
-            // Préparation de la requête SQL pour obtenir les identifiants des appareils
-            String sql = "SELECT id FROM appareils WHERE name = ?";
-            try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                // Remplacement du paramètre dans la requête
-                statement.setString(1, name);
+            String query = "SELECT * FROM microcontroleurs WHERE id = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setInt(1, id);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        String adresseIP = resultSet.getString("adresse_ip");
+                        microcontroleur = new Microcontroleur(adresseIP);
+                        microcontroleur.setId(id);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de la récupération du microcontrôleur : " + e.getMessage());
+        }
+        return microcontroleur;
+    }
 
-                // Exécution de la requête
+    //methode pour bobtenir les identifiants des appareils avec le nom specifier 
+    public static List<Integer> getAppareilIds(Connection connection, String nomAppareil) {
+        List<Integer> ids = new ArrayList<>();
+    
+        try {
+            // Préparez la requête SQL pour obtenir les identifiants des appareils avec le nom spécifié
+            String sql = "SELECT id FROM appareils WHERE nom = ?";
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                // Remplacez le paramètre dans la requête par le nom de l'appareil spécifié
+                statement.setString(1, nomAppareil);
+    
+                // Exécutez la requête
                 try (ResultSet resultSet = statement.executeQuery()) {
-                    // Traitement des résultats de la requête
+                    // Parcourez les résultats et ajoutez les identifiants à la liste
                     while (resultSet.next()) {
                         int id = resultSet.getInt("id");
                         ids.add(id);
@@ -141,35 +110,51 @@ public static void MetreAjourAppreil(Connection connection, String name, String 
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Erreur lors de la récupération des identifiants d'appareil : " + e.getMessage());
+            // Gérez les exceptions SQL si nécessaire
+            e.printStackTrace();
         }
+    
         return ids;
     }
-// methode qui permet de verifier si un appareil existe ou nom 
-public static boolean appareilExiste(Connection connection, String name){
-    boolean existe = false;
-    try {
-        // nous allons preparer la requette sql pour verifier l'existence de l'appareil
-        String sql = "SELECT COUNT(*) FROM appareils WHERE name = ?";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, name);
 
-            //execution de la requette 
-            try (ResultSet resultSet = statement.executeQuery()){
-              // si une ligne est retourne cela signifie que l'appareil existe 
-              if(resultSet.next()){
-                int count = resultSet.getInt(1);
-                existe = count > 0 ;
-              }  
+
+        // Méthode pour récupérer tous les microcontrôleurs de la base de données
+        public static List<Microcontroleur> getMicrocontroleurs(Connection connection) {
+            List<Microcontroleur> microcontroleurs = new ArrayList<>();
+            try {
+                // Préparation de la requête SQL pour récupérer tous les microcontrôleurs
+                String sql = "SELECT * FROM microcontroleur";
+                try (PreparedStatement statement = connection.prepareStatement(sql);
+                     ResultSet resultSet = statement.executeQuery()) {
+                    // Parcours des résultats pour créer les objets Microcontroleur
+                    while (resultSet.next()) {
+                        int id = resultSet.getInt("id");
+                        String nom = resultSet.getString("nom");
+                        String adresseIP = resultSet.getString("adresse_ip");
+                        Microcontroleur microcontroleur = new Microcontroleur(id,nom, adresseIP);
+                        microcontroleurs.add(microcontroleur);
+                    }
+                }
+            } catch (SQLException e) {
+                // Gestion des exceptions SQL si nécessaire
+                e.printStackTrace();
             }
+            return microcontroleurs;
         }
-    } catch (SQLException e) {
-        // TODO: handle exception
-        System.out.println("erreur laors de la verification de l'appareil " + e.getMessage());
+    // Méthode pour afficher les données d'un appareil spécifique
+    public static void afficherDonneesAppareil(Connection connection, int idAppareil) {
+        // À compléter
     }
 
 
-    return existe;
-}
+
+    // Méthodes pour mettre à jour et supprimer des appareils et des microcontrôleurs
+
+    // Méthodes supplémentaires si nécessaire
+
+    public static void ajouterDonnee(Donnee donnee) {
+        fileAttente.add(donnee);
+    }
+
 
 }

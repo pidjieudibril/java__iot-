@@ -5,7 +5,7 @@ import java.sql.Connection;
 public class Main {
 
     public static void main(String[] args) {
-        String dbURL = "jdbc:postgresql://localhost:5432/appJavaTest1";
+        String dbURL = "jdbc:postgresql://localhost:5432/appJavaTest4";
         String dbUser = "postgres";
         String dbPassword = "admin";
 
