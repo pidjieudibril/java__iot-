@@ -1,5 +1,7 @@
 package com.myfirstmavenproject;
 
+import java.util.Queue;
+
 public abstract class Appareil {
     protected String nom;
     protected Microcontroleur microcontroleur;
@@ -19,7 +21,7 @@ public abstract class Appareil {
 
     public abstract String lireDonnees();
 }
-
+/*
 class CapteurTemperature extends Appareil {
     public CapteurTemperature(String nom, Microcontroleur microcontroleur) {
         super(nom, microcontroleur);
@@ -28,30 +30,128 @@ class CapteurTemperature extends Appareil {
     @Override
     public String lireDonnees() {
         // Logique pour lire les données de température depuis le serveur HTTP
-        String url = "http://" + microcontroleur.getAdresseIP() + "/temperature";
+        String adresseIP = microcontroleur.getAdresseIP();
+        String url = "http://" + adresseIP + "/temperature";
         return serveurHTTP.envoyerRequeteGET(url);
     }
 
-      @Override
-        public String getType() {
-            return "Capteur de Température";
-        }
+    @Override
+    public String getType() {
+        return "Capteur de Température";
+    }
+}
+*/
+
+
+ class CapteurTemperature extends Appareil {
+    private Queue<String> fileAttente;
+
+    public CapteurTemperature(String nom, Microcontroleur microcontroleur, Queue<String> fileAttente) {
+        super(nom, microcontroleur);
+        this.fileAttente = fileAttente;
+    }
+
+   
+@Override
+public String lireDonnees() {
+    // Logique pour lire les données de température depuis le serveur HTTP
+    String adresseIP = microcontroleur.getAdresseIP();
+    String url = "http://" + adresseIP + "/temperature";
+    String reponseServeur = serveurHTTP.envoyerRequeteGET(url);
+
+    // Retourner la réponse brute
+    return reponseServeur;
 }
 
-class Photoresistance extends Appareil {
-    public Photoresistance(String nom, Microcontroleur microcontroleur) {
+
+  
+
+    @Override
+    public String getType() {
+        return "Capteur de Température";
+    }
+}
+
+// humidité 
+class CapteurHumidite extends Appareil {
+    private Queue<String> fileAttente;
+
+    public CapteurHumidite(String nom, Microcontroleur microcontroleur, Queue<String> fileAttente) {
         super(nom, microcontroleur);
+        this.fileAttente = fileAttente;
+    }
+
+    @Override
+    public String lireDonnees() {
+        // Logique pour lire les données d'humidité depuis le serveur HTTP
+        String adresseIP = microcontroleur.getAdresseIP();
+        String url = "http://" + adresseIP + "/humidite";
+        String reponseServeur = serveurHTTP.envoyerRequeteGET(url);
+
+        // Retourner la réponse brute
+        return reponseServeur;
+    }
+
+    @Override
+    public String getType() {
+        return "Capteur d'Humidité";
+    }
+}
+
+// photoresistance 
+
+class Photoresistance extends Appareil {
+    private Queue<String> fileAttente;
+
+    public Photoresistance(String nom, Microcontroleur microcontroleur, Queue<String> fileAttente) {
+        super(nom, microcontroleur);
+        this.fileAttente = fileAttente;
     }
 
     @Override
     public String lireDonnees() {
         // Logique pour lire les données de luminosité depuis le serveur HTTP
-        String url = "http://" + microcontroleur.getAdresseIP() + "/luminosite";
-        return serveurHTTP.envoyerRequeteGET(url);
+        String adresseIP = microcontroleur.getAdresseIP();
+        String url = "http://" + adresseIP + "/luminosite";
+        String reponseServeur = serveurHTTP.envoyerRequeteGET(url);
+
+        // Retourner la réponse brute
+        return reponseServeur;
     }
 
-      @Override
-        public String getType() {
-            return "Photoresistance";
-        }
+    @Override
+    public String getType() {
+        return "Photoresistance";
+    }
+}
+
+class ActionneurLED extends Appareil {
+    public ActionneurLED(String nom, Microcontroleur microcontroleur) {
+        super(nom, microcontroleur);
+    }
+
+    @Override
+    public String lireDonnees() {
+        // Les actionneurs n'ont pas de fonction pour lire des données
+        return "Les actionneurs ne lisent pas de données.";
+    }
+
+    @Override
+    public String getType() {
+        return "Actionneur LED";
+    }
+
+    public void allumerLED() {
+        // Logique pour allumer la LED via le serveur HTTP
+        String adresseIP = microcontroleur.getAdresseIP();
+        String url = "http://" + adresseIP + "/allumerLED";
+        serveurHTTP.envoyerRequetePOST(url);
+    }
+
+    public void eteindreLED() {
+        // Logique pour éteindre la LED via le serveur HTTP
+        String adresseIP = microcontroleur.getAdresseIP();
+        String url = "http://" + adresseIP + "/eteindreLED";
+        serveurHTTP.envoyerRequetePOST(url);
+    }
 }

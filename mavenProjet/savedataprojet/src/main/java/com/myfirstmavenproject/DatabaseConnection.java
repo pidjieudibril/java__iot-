@@ -21,6 +21,7 @@ public class DatabaseConnection {
             createTableNoExist (connection); //vérifie et crée la table si elle n'existe pas 
             createDonneesTableNoExist(connection);
             createMicrocontroleurTableNoExist(connection);
+            createDonneesTableActionneurNoExist(connection);
         } catch (SQLException e) {
             e.printStackTrace(); // imprime les details de l'erreur 
             throw new SQLException("erreur lors de la connection  a la base de donnees ", e);
@@ -211,7 +212,7 @@ private static void createDonneesTableNoExist(Connection connection) {
 //creer la table pour les donnees de chaque appareil si elle n'exite pas 
 private static void createDonneesTable(Connection connection) {
     try {
-        String queryToCreateTable = "CREATE TABLE donnees_appareils (id SERIAL PRIMARY KEY,  donnee VARCHAR(255), timestamp TIMESTAMP, nom_app VARCHAR(255) REFERENCES appareils(nom_app)) " ;
+        String queryToCreateTable = "CREATE TABLE donnees_appareils (id SERIAL PRIMARY KEY,  donnee VARCHAR(255), timestamp TIMESTAMP, nom_app VARCHAR(255) REFERENCES appareils(nom_app), adresse_ip VARCHAR(255) REFERENCES microcontroleur(adresse_ip)) " ;
         try (Statement statement = connection.createStatement()) {
             statement.executeUpdate(queryToCreateTable);
             System.out.println("Table donnees_appareils créée avec succès");
@@ -222,7 +223,40 @@ private static void createDonneesTable(Connection connection) {
 }
 
 
+// creation de la table pour les donnees de chaque appareil 
 
+private static void createDonneesTableActionneurNoExist(Connection connection) {
+    try {
+        //verifier si l table existe dans le shema d'informtion de la base de donnee
+        String checkIfTableExist = "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'donnees_Actionneur')";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(checkIfTableExist);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+
+            resultSet.next();
+            boolean tableExists = resultSet.getBoolean(1);
+                // si la table n'existe pas crée-la
+            if (!tableExists) {
+                System.out.println("creation de la table  donnees_Actionneur");
+                createDonneesTableActionneur(connection);
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("une erreur s'est produit lors de la creation des tables  " + e.getMessage());
+    }
+}
+
+//creer la table pour les donnees de chaque appareil si elle n'exite pas 
+private static void createDonneesTableActionneur(Connection connection) {
+    try {
+        String queryToCreateTable = "CREATE TABLE donnees_Actionneur (id SERIAL PRIMARY KEY,  etat VARCHAR(255), timestamp TIMESTAMP, nom_app VARCHAR(255) REFERENCES appareils(nom_app), adresse_ip VARCHAR(255) REFERENCES microcontroleur(adresse_ip)) " ;
+        try (Statement statement = connection.createStatement()) {
+            statement.executeUpdate(queryToCreateTable);
+            System.out.println("Table donnees_Actionneur créée avec succès");
+        }
+    } catch (SQLException e) {
+        System.err.println("Erreur lors de la création de la table donnees_Actionneur : " + e.getMessage());
+    }
+}
 
 
 

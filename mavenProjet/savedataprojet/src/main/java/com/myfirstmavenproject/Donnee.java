@@ -5,6 +5,7 @@ public class Donnee {
     private String typeAppareil;
     private int idMicrocontroleur;
     private String etatFonctionnement;
+    private String donneApp;
 
     public Donnee(String nomAppareil, String typeAppareil,String etatFonctionnement, int idMicrocontroleur) {
         this.nomAppareil = nomAppareil;
@@ -12,7 +13,12 @@ public class Donnee {
         this.etatFonctionnement = etatFonctionnement;
         this.idMicrocontroleur = idMicrocontroleur;
     }
-
+  public Donnee(String nomAppareil, String typeAppareil,String etatFonctionnement) {
+        this.nomAppareil = nomAppareil;
+        this.typeAppareil = typeAppareil;
+        this.etatFonctionnement = etatFonctionnement;
+        
+    }
     // Getters et setters
 
     public String getNomAppareil() {
@@ -23,13 +29,21 @@ public class Donnee {
         this.nomAppareil = nomAppareil;
     }
 
-    public String getTypeAppareil() {
-        return typeAppareil;
+    public String getEtatFonctionnement() {
+        return etatFonctionnement;
     }
 
-    public void setTypeAppareil(String typeAppareil) {
-        this.typeAppareil = typeAppareil;
+    public void setEtatFonctionnement(String etatFonctionnement) {
+        this.etatFonctionnement = etatFonctionnement;
     }
+
+      public String getTypeAppareil() {
+            return typeAppareil;
+        }
+    
+        public void setTypeAppareil(String typeAppareil) {
+            this.typeAppareil = typeAppareil;
+        }
 
     public int getIdMicrocontroleur() {
         return idMicrocontroleur;
@@ -38,4 +52,5 @@ public class Donnee {
     public void setIdMicrocontroleur(int idMicrocontroleur) {
         this.idMicrocontroleur = idMicrocontroleur;
     }
+
 }

@@ -2,8 +2,14 @@ package com.myfirstmavenproject;
 
 import java.sql.Connection;
 import java.util.InputMismatchException;
+
 import java.util.List;
+
 import java.util.Scanner;
+
+
+
+
 
 public class Menu {
 
@@ -20,12 +26,13 @@ public class Menu {
             System.out.printf("%-2s %-22s %s%n", "1 :", "Ajouter un microcontrôleur", "*");
             System.out.printf("%-2s %-22s %s%n", "2 :", "Ajouter un appareil", "*");
             System.out.printf("%-2s %-22s %s%n", "3 :", "Afficher les appareils", "*");
-            System.out.printf("%-2s %-22s %s%n", "4 :", "Afficher les données d'un appareil", "*");
-            System.out.printf("%-2s %-22s %s%n", "5 :", "Mettre à jour un appareil", "*");
-            System.out.printf("%-2s %-22s %s%n", "6 :", "Supprimer un appareil", "*");
-            System.out.printf("%-2s %-22s %s%n", "7 :", "Mettre à jour un microcontrôleur", "*");
-            System.out.printf("%-2s %-22s %s%n", "8 :", "Supprimer un microcontrôleur", "*");
-            System.out.printf("%-2s %-22s %s%n", "9 :", "Quitter le programme", "*");
+             System.out.printf("%-2s %-22s %s%n", "4 :", "recuperer et afficher donnees ", "*");
+            System.out.printf("%-2s %-22s %s%n", "5:", "Afficher les données d'un appareil", "*");
+            System.out.printf("%-2s %-22s %s%n", "6 :", "Mettre à jour un appareil", "*");
+            System.out.printf("%-2s %-22s %s%n", "7 :", "Supprimer un appareil", "*");
+            System.out.printf("%-2s %-22s %s%n", "8 :", "Mettre à jour un microcontrôleur", "*");
+            System.out.printf("%-2s %-22s %s%n", "9 :", "Supprimer un microcontrôleur", "*");
+            System.out.printf("%-2s %-22s %s%n", "10 :", "Quitter le programme", "*");
             System.out.println("*************************");
 
             System.out.print("Choisissez une option : ");
@@ -43,22 +50,33 @@ public class Menu {
                     case 3:
                         afficherAppareils(connection);
                         break;
+
                     case 4:
+                  
+                    RecupererEtAfficherDonnees.recupererEtAfficherDonnees(connection);
+                   
+                
+                   
+
+                        break;
+                    
+                    case 5:
                         afficherDonneesAppareil(connection);
                         break;
-                    case 5:
+                    case 6:
                         mettreAJourAppareil(connection);
                         break;
-                    case 6:
+                    case 7:
+
                         supprimerAppareil(connection);
                         break;
-                    case 7:
+                    case 8:
                         mettreAJourMicrocontroleur(connection);
                         break;
-                    case 8:
+                    case 9:
                         supprimerMicrocontroleur(connection);
                         break;
-                    case 9:
+                    case 10:
                         DatabaseConnection.closeConnection(connection);
                         System.out.println("Programme terminé");
                         System.exit(0);
@@ -95,7 +113,7 @@ public class Menu {
 // methode pour ajouter les appareil dans la base de donnee
     private static void ajouterAppareil(Connection connection) {
         Scanner scanner = new Scanner(System.in);
-        System.out.print("Choisissez le microcontrôleur auquel l'appareil sera lié : ");
+        System.out.print("Choisissez le microcontrôleur auquel l'appareil sera lié :\n ");
         afficherMicrocontroleurs(connection);
         int choixMicrocontroleur = scanner.nextInt();
         scanner.nextLine(); // Consommer la nouvelle ligne
@@ -120,47 +138,37 @@ public class Menu {
         }
     }
     
-
+// methode pour afficharge des appareils 
     private static void afficherAppareils(Connection connection) {
         Traitement.afficherAppareils(connection);
     }
 
+    // methode pour afficher les donnees des appareils 
     private static void afficherDonneesAppareil(Connection connection) {
         Scanner scanner = new Scanner(System.in);
-        System.out.print("Entrez le nom de l'appareil dont vous voulez afficher les données : ");
+        System.out.println("Entrez le nom de l'appareil dont vous souhaitez voir les données : ");
         String nomAppareil = scanner.nextLine();
-        List<Integer> ids = Traitement.getAppareilIds(connection, nomAppareil);
-        if (!ids.isEmpty()) {
-            if (ids.size() > 1) {
-                System.out.println("Plusieurs appareils trouvés avec ce nom. Choisissez l'ID de l'appareil : ");
-                for (Integer id : ids) {
-                    System.out.println("ID : " + id);
-                }
-                int choixId = scanner.nextInt();
-                scanner.nextLine(); // Consommer la nouvelle ligne
-                Traitement.afficherDonneesAppareil(connection, choixId);
-            } else {
-                Traitement.afficherDonneesAppareil(connection, ids.get(0));
-            }
-        } else {
-            System.out.println("Aucun appareil trouvé avec ce nom.");
-        }
+        Traitement.afficherDonneesAppareil(connection, nomAppareil);
     }
 
+    // Méthode pour mettre à jour un appareil
     private static void mettreAJourAppareil(Connection connection) {
-        // À compléter
+        Traitement.mettreAJourAppareil(connection);
     }
 
+    // Méthode pour supprimer un appareil
     private static void supprimerAppareil(Connection connection) {
-        // À compléter
+        Traitement.supprimerAppareil(connection);
     }
 
+    // Méthode pour mettre à jour un microcontrôleur
     private static void mettreAJourMicrocontroleur(Connection connection) {
-        // À compléter
+        Traitement.mettreAJourMicrocontroleur(connection);
     }
 
+    // Méthode pour supprimer un microcontrôleur
     private static void supprimerMicrocontroleur(Connection connection) {
-        // À compléter
+        Traitement.supprimerMicrocontroleur(connection);
     }
 
     private static void afficherMicrocontroleurs(Connection connection) {

@@ -8,11 +8,19 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Scanner;
 
 public class Traitement {
-     
-     private static Queue<Donnee> fileAttente = new LinkedList<>();
+
+    private static Queue<Donnee> fileAttente = new LinkedList<>();
     private static List<Microcontroleur> microcontroleurs = new ArrayList<>();
+    private static Connection connection;
+
+    public static void setConnection(Connection connection) {
+        Traitement.connection = connection;
+    }
+     
+    
 //methode pour ajouter un microcontroleur dans la base de donnée 
     public static void ajouterMicrocontroleur(Connection connection, String nom, String adresseIP) {
         Microcontroleur microcontroleur = new Microcontroleur(nom, adresseIP); // Créer une instance de Microcontroleur
@@ -30,7 +38,7 @@ public class Traitement {
     }
 
     // methode pour ajouter un appareil dans la base de donnée 
-    public static void ajouterAppareil(Connection connection, String nomAppareil, String etatFonctionnement, String typeAppareil, int idMicrocontroleur) {
+    public static void ajouterAppareil(Connection connection, String nomAppareil,  String typeAppareil, String etatFonctionnement, int idMicrocontroleur) {
         String query = "INSERT INTO appareils (nom_app, type, etat_fonctionnement, adresse_ip) VALUES (?, ?, ?, ?)";
         
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -96,7 +104,7 @@ public class Traitement {
     }
 */
     // Méthode pour afficher les appareils liés à chaque microcontrôleur
-    public static void afficherAppareils(Connection connection) {
+   /* public static void afficherAppareils(Connection connection) {
         for (Microcontroleur microcontroleur : microcontroleurs) {
             System.out.println("Microcontrôleur " + microcontroleur.getAdresseIP() + " :");
             List<Appareil> appareils = microcontroleur.getAppareils();
@@ -110,7 +118,48 @@ public class Traitement {
             System.out.println();
         }
     }
+*/
 
+
+public static void afficherAppareils(Connection connection) {
+    String queryMicrocontroleurs = "SELECT id, nom_microcontroleur, adresse_ip FROM microcontroleur";
+
+    try (PreparedStatement preparedStatementMicrocontroleurs = connection.prepareStatement(queryMicrocontroleurs);
+         ResultSet resultSetMicrocontroleurs = preparedStatementMicrocontroleurs.executeQuery()) {
+
+        while (resultSetMicrocontroleurs.next()) {
+            int idMicrocontroleur = resultSetMicrocontroleurs.getInt("id");
+            String nomMicrocontroleur = resultSetMicrocontroleurs.getString("nom_microcontroleur");
+            String adresseIP = resultSetMicrocontroleurs.getString("adresse_ip");
+            System.out.println("Microcontrôleur " + nomMicrocontroleur + ":");
+            afficherAppareilsMicrocontroleur(connection, adresseIP);
+            System.out.println();
+        }
+
+    } catch (SQLException e) {
+        System.err.println("Erreur lors de la récupération des microcontrôleurs depuis la base de données : " + e.getMessage());
+    }
+}
+private static void afficherAppareilsMicrocontroleur(Connection connection, String adresseIPMicrocontroleur) {
+    String queryAppareils = "SELECT nom_app, type, etat_fonctionnement FROM appareils WHERE adresse_ip = ?";
+
+    try (PreparedStatement preparedStatementAppareils = connection.prepareStatement(queryAppareils)) {
+        preparedStatementAppareils.setString(1, adresseIPMicrocontroleur);
+        try (ResultSet resultSetAppareils = preparedStatementAppareils.executeQuery()) {
+            while (resultSetAppareils.next()) {
+                String nomAppareil = resultSetAppareils.getString("nom_app");
+                String typeAppareil = resultSetAppareils.getString("type");
+                String etatFonctionnementAppareil = resultSetAppareils.getString("etat_fonctionnement");
+                
+              
+                System.out.println("Nom : " + nomAppareil + ", Type : " +typeAppareil  + ",  etat de fonctionnement: " +etatFonctionnementAppareil );
+
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("Erreur lors de la récupération des appareils du microcontrôleur depuis la base de données : " + e.getMessage());
+    }
+}
 
      // Méthode pour récupérer un microcontrôleur par son identifiant
     public static Microcontroleur getMicrocontroleurById(Connection connection, int id) {
@@ -134,32 +183,6 @@ public class Traitement {
     }
 
     //methode pour bobtenir les identifiants des appareils avec le nom specifier 
-    public static List<Integer> getAppareilIds(Connection connection, String nomAppareil) {
-        List<Integer> ids = new ArrayList<>();
-    
-        try {
-            // Préparez la requête SQL pour obtenir les identifiants des appareils avec le nom spécifié
-            String sql = "SELECT id FROM appareils WHERE nom_app = ?";
-            try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                // Remplacez le paramètre dans la requête par le nom de l'appareil spécifié
-                statement.setString(1, nomAppareil);
-    
-                // Exécutez la requête
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    // Parcourez les résultats et ajoutez les identifiants à la liste
-                    while (resultSet.next()) {
-                        int id = resultSet.getInt("id");
-                        ids.add(id);
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            // Gérez les exceptions SQL si nécessaire
-            e.printStackTrace();
-        }
-    
-        return ids;
-    }
 
 
         // Méthode pour récupérer tous les microcontrôleurs de la base de données
@@ -185,20 +208,265 @@ public class Traitement {
             }
             return microcontroleurs;
         }
+ // Méthode pour obtenir l'adresse IP d'un microcontrôleur à partir de son nom
+   
+        public static String getAdresseIP(String nomMicrocontroleur) {
+            String adresseIP = null;
+            String query = "SELECT adresse_ip FROM microcontroleur WHERE nom_microcontroleur = ?";
+            
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setString(1, nomMicrocontroleur);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        adresseIP = resultSet.getString("adresse_ip");
+                    }
+                }
+            } catch (SQLException e) {
+                System.err.println("Erreur lors de la récupération de l'adresse IP du microcontrôleur : " + e.getMessage());
+            }
+            
+            return adresseIP;
+        }
+        
     // Méthode pour afficher les données d'un appareil spécifique
-    public static void afficherDonneesAppareil(Connection connection, int idAppareil) {
-        // À compléter
+   
+
+
+
+
+
+ // Méthode pour afficher les données d'un appareil spécifique
+ public static void afficherDonneesAppareil(Connection connection, String nomAppareil) {
+    String typeAppareil = getTypeAppareil(connection, nomAppareil);
+    
+    if (typeAppareil.equals("capteur")) {
+        afficherDonneesCapteur(connection, nomAppareil);
+    } else if (typeAppareil.equals("actionneur")) {
+        afficherEtatActuateur(connection, nomAppareil);
+    } else {
+        System.out.println("Type d'appareil inconnu.");
+    }
+}
+
+// Méthode pour obtenir le type de l'appareil (capteur ou actuateur)
+private static String getTypeAppareil(Connection connection, String nomAppareil) {
+    String type = "";
+    String query = "SELECT type FROM appareils WHERE nom_app = ?";
+    try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        preparedStatement.setString(1, nomAppareil);
+        try (ResultSet resultSet = preparedStatement.executeQuery()) {
+            if (resultSet.next()) {
+                type = resultSet.getString("type");
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("Erreur lors de la récupération du type d'appareil : " + e.getMessage());
+    }
+    return type;
+}
+
+// Méthode pour afficher les données d'un capteur
+private static void afficherDonneesCapteur(Connection connection, String nomAppareil) {
+    String query = "SELECT donnee FROM donnees_appareils WHERE nom_app = ?";
+    try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        preparedStatement.setString(1, nomAppareil);
+        try (ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                String donnee = resultSet.getString("donnee");
+                System.out.println("Type: Capteur, Données: " + donnee);
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("Erreur lors de la récupération des données du capteur : " + e.getMessage());
+    }
+}
+
+// Méthode pour afficher l'état d'un actionneur avec l'heure
+private static void afficherEtatActuateur(Connection connection, String nomAppareil) {
+    String query = "SELECT etat, timestamp FROM donnees_actionneur WHERE nom_app = ?";
+    try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        preparedStatement.setString(1, nomAppareil);
+        try (ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                String etat = resultSet.getString("etat");
+                String timestamp = resultSet.getString("timestamp");
+                System.out.println("Type: Actuateur, État: " + etat + ", Heure: " + timestamp);
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("Erreur lors de la récupération de l'état de l'actionneur : " + e.getMessage());
+    }
+}
+
+
+
+
+
+
+//METHODE POUR LA MISE A JOUR DES APPAREILS ET MICROCONTROLEUR 
+
+
+    // Méthode pour mettre à jour un appareil
+    public static void mettreAJourAppareil(Connection connection) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Entrez le nom de l'appareil que vous souhaitez mettre à jour : ");
+        String nomAppareil = scanner.nextLine();
+
+        // Demander les nouvelles informations
+        System.out.println("Entrez le nouveau type de l'appareil : ");
+        String nouveauType = scanner.nextLine();
+        System.out.println("Entrez le nouvel état de fonctionnement de l'appareil : ");
+        String nouvelEtat = scanner.nextLine();
+        System.out.println("Entrez la nouvelle adresse IP de l'appareil : ");
+        String nouvelleAdresseIP = scanner.nextLine();
+
+        // Mettre à jour l'appareil dans la base de données
+        String query = "UPDATE appareils SET type = ?, etat_fonctionnement = ?, adresse_ip = ? WHERE nom_app = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, nouveauType);
+            preparedStatement.setString(2, nouvelEtat);
+            preparedStatement.setString(3, nouvelleAdresseIP);
+            preparedStatement.setString(4, nomAppareil);
+
+            int rowsAffected = preparedStatement.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("L'appareil '" + nomAppareil + "' a été mis à jour avec succès");
+            } else {
+                System.out.println("L'appareil '" + nomAppareil + "' n'existe pas");
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de la mise à jour de l'appareil : " + e.getMessage());
+        }
+    }
+
+    // Méthode pour mettre à jour un microcontrôleur
+    public static void mettreAJourMicrocontroleur(Connection connection) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Entrez l'adresse IP du microcontrôleur que vous souhaitez mettre à jour : ");
+        String adresseIP = scanner.nextLine();
+
+        // Demander les nouvelles informations
+        System.out.println("Entrez le nouveau nom du microcontrôleur : ");
+        String nouveauNom = scanner.nextLine();
+
+        // Mettre à jour le microcontrôleur dans la base de données
+        String query = "UPDATE microcontroleur SET nom_microcontroleur = ? WHERE adresse_ip = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, nouveauNom);
+            preparedStatement.setString(2, adresseIP);
+
+            int rowsAffected = preparedStatement.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Le microcontrôleur avec l'adresse IP '" + adresseIP + "' a été mis à jour avec succès.");
+            } else {
+                System.out.println("Le microcontrôleur avec l'adresse IP '" + adresseIP + "' n'existe pas.");
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de la mise à jour du microcontrôleur : " + e.getMessage());
+        }
     }
 
 
 
-    // Méthodes pour mettre à jour et supprimer des appareils et des microcontrôleurs
 
-    // Méthodes supplémentaires si nécessaire
 
+
+// MISE A JOUR ET SUPPRESSION DES APPAREILS ET MICROCONTROLEUR 
+
+
+ 
+    // Méthode pour supprimer un appareil
+    public static void supprimerAppareil(Connection connection) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Entrez le nom de l'appareil que vous souhaitez supprimer : ");
+        String nomAppareil = scanner.nextLine();
+
+        // Demande de confirmation
+        System.out.println("Êtes-vous sûr de vouloir supprimer l'appareil '" + nomAppareil + "' ? (O/N)");
+        String confirmation = scanner.nextLine();
+
+        if (confirmation.equalsIgnoreCase("O")) {
+            // Suppression de l'appareil
+            String query = "DELETE FROM appareils WHERE nom_app = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setString(1, nomAppareil);
+                int rowsAffected = preparedStatement.executeUpdate();
+                if (rowsAffected > 0) {
+                    System.out.println("L'appareil '" + nomAppareil + "' a été supprimé avec succès");
+                } else {
+                    System.out.println("L'appareil '" + nomAppareil + "' n'existe pas");
+                }
+            } catch (SQLException e) {
+                System.err.println("Erreur lors de la suppression de l'appareil : " + e.getMessage());
+            }
+        } else {
+            System.out.println("Suppression annulée.");
+        }
+    }
+
+  
+
+    // Méthode pour supprimer un microcontrôleur
+    public static void supprimerMicrocontroleur(Connection connection) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Entrez l'adresse IP du microcontrôleur que vous souhaitez supprimer : ");
+        String adresseIP = scanner.nextLine();
+
+        // Demande de confirmation
+        System.out.println("Êtes-vous sûr de vouloir supprimer le microcontrôleur avec l'adresse IP '" + adresseIP + "' ? (O/N)");
+        String confirmation = scanner.nextLine();
+
+        if (confirmation.equalsIgnoreCase("O")) {
+            // Suppression du microcontrôleur et des données liées
+            String query = "DELETE FROM microcontroleur WHERE adresse_ip = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setString(1, adresseIP);
+                int rowsAffected = preparedStatement.executeUpdate();
+                if (rowsAffected > 0) {
+                    System.out.println("Le microcontrôleur avec l'adresse IP '" + adresseIP + "' a été supprimé avec succès.");
+                } else {
+                    System.out.println("Le microcontrôleur avec l'adresse IP '" + adresseIP + "' n'existe pas.");
+                }
+            } catch (SQLException e) {
+                System.err.println("Erreur lors de la suppression du microcontrôleur : " + e.getMessage());
+            }
+        } else {
+            System.out.println("Suppression annulée.");
+        }
+    }
+   
+    
+
+    
+    public static List<Microcontroleur> getMicrocontroleursFromDatabase(Connection connection) {
+        List<Microcontroleur> microcontroleurs = new ArrayList<>();
+
+        String query = "SELECT id, nom_microcontroleur, adresse_ip FROM microcontroleur";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                int id = resultSet.getInt("id");
+                String nom = resultSet.getString("nom_microcontroleur");
+                String adresseIP = resultSet.getString("adresse_ip");
+
+                Microcontroleur microcontroleur = new Microcontroleur(id, nom, adresseIP);
+                microcontroleurs.add(microcontroleur);
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de la récupération des microcontrôleurs depuis la base de données : " + e.getMessage());
+        }
+
+        return microcontroleurs;
+    }
+
+    
     public static void ajouterDonnee(Donnee donnee) {
         fileAttente.add(donnee);
     }
 
+
+ 
 
 }
