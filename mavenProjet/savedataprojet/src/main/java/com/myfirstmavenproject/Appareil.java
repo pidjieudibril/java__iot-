@@ -155,3 +155,34 @@ class ActionneurLED extends Appareil {
         serveurHTTP.envoyerRequetePOST(url);
     }
 }
+
+class ActionneurPorte extends Appareil {
+    public ActionneurPorte(String nom, Microcontroleur microcontroleur) {
+        super(nom, microcontroleur);
+    }
+
+    @Override
+    public String lireDonnees() {
+       
+        return "Les actionneurs de porte ne lisent pas de données.";
+    }
+
+    @Override
+    public String getType() {
+        return "Actionneur de Porte";
+    }
+
+    public void ouvrirPorte() {
+        // Logique pour ouvrir la porte via le serveur HTTP
+        String adresseIP = microcontroleur.getAdresseIP();
+        String url = "http://" + adresseIP + "/ouvrirPorte";
+        serveurHTTP.envoyerRequetePOST(url);
+    }
+
+    public void fermerPorte() {
+        // Logique pour fermer la porte via le serveur HTTP
+        String adresseIP = microcontroleur.getAdresseIP();
+        String url = "http://" + adresseIP + "/fermerPorte";
+        serveurHTTP.envoyerRequetePOST(url);
+    }
+}
