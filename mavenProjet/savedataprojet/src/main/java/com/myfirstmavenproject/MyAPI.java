@@ -61,10 +61,6 @@ public class MyAPI {
         logger.info("Serveur HTTP démarré sur le port 8000.");
     }
 
-    // Reste du code des gestionnaires de requêtes HTTP...
-
-
-
     static class AjouterMicrocontroleurHandler implements HttpHandler {
         private final Connection connection;
 
@@ -134,12 +130,6 @@ public class MyAPI {
                 exchange.sendResponseHeaders(405, -1);
             }
         }
-    }
-
-    // Méthode pour ajouter un microcontrôleur dans la base de données
-    private static void ajouterMicrocontroleur(Connection connection, String nom, String adresseIP) {
-        // Insérer le microcontrôleur dans la base de données en utilisant les méthodes de la classe Traitement
-        Traitement.ajouterMicrocontroleur(connection, nom, adresseIP);
     }
 
     // Méthode pour ajouter un appareil dans la base de données
