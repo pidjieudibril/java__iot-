@@ -19,10 +19,10 @@ public class RecupererEtAfficherDonnees {
      private static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
  
      // Première instance de microcontrôleur
-     private static Microcontroleur microcontroleur1 = new Microcontroleur("192.168.1.124");
+     private static Microcontroleur microcontroleur1 = new Microcontroleur("192.168.1.23");
  
      // Deuxième instance de microcontrôleur
-     private static Microcontroleur microcontroleur2 = new Microcontroleur("192.168.1.137");
+     private static Microcontroleur microcontroleur2 = new Microcontroleur("192.168.1.152");
  
      // Capteur de température pour le premier microcontrôleur
      private static CapteurTemperature capteurTemperature1 = new CapteurTemperature("CapteurTemp1", microcontroleur1, fileAttente);
